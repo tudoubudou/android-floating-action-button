@@ -5,7 +5,7 @@ android {
   buildToolsVersion "22.0.1"
 
   defaultConfig {
-    minSdkVersion 14
+    minSdkVersion 10
     targetSdkVersion 22
     versionName project.VERSION_NAME
     versionCode Integer.parseInt(project.VERSION_CODE)
@@ -21,6 +21,7 @@ android {
 
 dependencies {
   compile 'com.android.support:support-annotations:22.2.0'
+  compile files('libs/library-2.4.0.jar')
 }
 
 apply from: './gradle-mvn-push.gradle'

@@ -1,15 +1,11 @@
 package com.getbase.floatingactionbutton;
-
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.ColorRes;
@@ -23,6 +19,17 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.TextView;
+
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorListenerAdapter;
+import com.nineoldandroids.animation.AnimatorSet;
+import com.nineoldandroids.animation.ObjectAnimator;
+import com.nineoldandroids.animation.PropertyValuesHolder;
+import com.nineoldandroids.animation.TypeEvaluator;
+import com.nineoldandroids.animation.ValueAnimator;
+import com.nineoldandroids.util.FloatProperty;
+import com.nineoldandroids.util.Property;
+import com.nineoldandroids.view.ViewHelper;
 
 public class FloatingActionsMenu extends ViewGroup {
   public static final int EXPAND_UP = 0;
@@ -313,8 +320,8 @@ public class FloatingActionsMenu extends ViewGroup {
         float collapsedTranslation = addButtonY - childY;
         float expandedTranslation = 0f;
 
-        child.setTranslationY(mExpanded ? expandedTranslation : collapsedTranslation);
-        child.setAlpha(mExpanded ? 1f : 0f);
+        ViewHelper.setTranslationY(child, mExpanded ? expandedTranslation : collapsedTranslation);
+        ViewHelper.setAlpha(child,mExpanded ? 1f : 0f);
 
         LayoutParams params = (LayoutParams) child.getLayoutParams();
         params.mCollapseDir.setFloatValues(expandedTranslation, collapsedTranslation);
@@ -346,8 +353,8 @@ public class FloatingActionsMenu extends ViewGroup {
               childY + child.getMeasuredHeight() + mButtonSpacing / 2);
           mTouchDelegateGroup.addTouchDelegate(new TouchDelegate(touchArea, child));
 
-          label.setTranslationY(mExpanded ? expandedTranslation : collapsedTranslation);
-          label.setAlpha(mExpanded ? 1f : 0f);
+          ViewHelper.setTranslationY(label, mExpanded ? expandedTranslation : collapsedTranslation);
+          ViewHelper.setAlpha(label,mExpanded ? 1f : 0f);
 
           LayoutParams labelParams = (LayoutParams) label.getLayoutParams();
           labelParams.mCollapseDir.setFloatValues(expandedTranslation, collapsedTranslation);
@@ -386,8 +393,8 @@ public class FloatingActionsMenu extends ViewGroup {
         float collapsedTranslation = addButtonX - childX;
         float expandedTranslation = 0f;
 
-        child.setTranslationX(mExpanded ? expandedTranslation : collapsedTranslation);
-        child.setAlpha(mExpanded ? 1f : 0f);
+        ViewHelper.setTranslationX(child, mExpanded ? expandedTranslation : collapsedTranslation);
+        ViewHelper.setAlpha(child,mExpanded ? 1f : 0f);
 
         LayoutParams params = (LayoutParams) child.getLayoutParams();
         params.mCollapseDir.setFloatValues(expandedTranslation, collapsedTranslation);
@@ -443,22 +450,22 @@ public class FloatingActionsMenu extends ViewGroup {
       mCollapseDir.setInterpolator(sCollapseInterpolator);
       mCollapseAlpha.setInterpolator(sCollapseInterpolator);
 
-      mCollapseAlpha.setProperty(View.ALPHA);
+      mCollapseAlpha.setProperty(ALPHA);
       mCollapseAlpha.setFloatValues(1f, 0f);
 
-      mExpandAlpha.setProperty(View.ALPHA);
+      mExpandAlpha.setProperty(ALPHA);
       mExpandAlpha.setFloatValues(0f, 1f);
 
       switch (mExpandDirection) {
       case EXPAND_UP:
       case EXPAND_DOWN:
-        mCollapseDir.setProperty(View.TRANSLATION_Y);
-        mExpandDir.setProperty(View.TRANSLATION_Y);
+        mCollapseDir.setProperty(TRANSLATION_Y);
+        mExpandDir.setProperty(TRANSLATION_Y);
         break;
       case EXPAND_LEFT:
       case EXPAND_RIGHT:
-        mCollapseDir.setProperty(View.TRANSLATION_X);
-        mExpandDir.setProperty(View.TRANSLATION_X);
+        mCollapseDir.setProperty(TRANSLATION_X);
+        mExpandDir.setProperty(TRANSLATION_X);
         break;
       }
     }
@@ -486,12 +493,16 @@ public class FloatingActionsMenu extends ViewGroup {
       animator.addListener(new AnimatorListenerAdapter() {
         @Override
         public void onAnimationEnd(Animator animation) {
-          view.setLayerType(LAYER_TYPE_NONE, null);
+          if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
+            view.setLayerType(LAYER_TYPE_NONE, null);
+          }
         }
 
         @Override
         public void onAnimationStart(Animator animation) {
-          view.setLayerType(LAYER_TYPE_HARDWARE, null);
+          if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD_MR1) {
+            view.setLayerType(LAYER_TYPE_HARDWARE, null);
+          }
         }
       });
     }
@@ -639,4 +650,38 @@ public class FloatingActionsMenu extends ViewGroup {
       }
     };
   }
+  public static final Property<View, Float> TRANSLATION_Y = new FloatProperty<View>("translationY") {
+    @Override
+    public void setValue(View object, float value) {
+      ViewHelper.setTranslationY(object,value);
+    }
+
+    @Override
+    public Float get(View object) {
+      return ViewHelper.getTranslationY(object);
+    }
+  };
+  public static final Property<View, Float> ALPHA = new FloatProperty<View>("alpha") {
+    @Override
+    public void setValue(View object, float value) {
+      ViewHelper.setAlpha(object, value);
+    }
+
+    @Override
+    public Float get(View object) {
+      return ViewHelper.getAlpha(object);
+    }
+  };
+  public static final Property<View, Float> TRANSLATION_X = new FloatProperty<View>("translationX") {
+    @Override
+    public void setValue(View object, float value) {
+      ViewHelper.setTranslationX(object,value);
+    }
+
+    @Override
+    public Float get(View object) {
+      return ViewHelper.getTranslationX(object);
+    }
+  };
+
 }
